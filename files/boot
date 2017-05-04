@@ -1,0 +1,30 @@
+#!/bin/bash
+
+if [[ $1 == "master" ]]; then
+  # Start ssh service required by hadoop
+  service ssh start
+
+  # Start haddop cluster
+  ## Start DFS
+  $HADOOP_HOME/sbin/start-dfs.sh
+
+  # Start spark cluster
+  $SPARK_HOME/sbin/start-master.sh
+elif [[ $1 == "worker" ]]; then
+  # Wait for master to be up
+  sleep 10
+  # Start haddop cluster
+  # $HADOOP_HOME/sbin/hadoop-daemon.sh stop datanode
+  $HADOOP_HOME/sbin/hadoop-daemon.sh start datanode
+
+  # Add node to spark cluster
+  $SPARK_HOME/sbin/start-slave.sh ${3:-"spark://master:7077"}
+fi
+
+# Shell
+if [[ $2 == "-bash" ]]; then
+  /bin/bash
+else
+  # Keep alive
+  while true; do sleep 1000; done
+fi
